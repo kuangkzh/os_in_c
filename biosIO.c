@@ -1,17 +1,21 @@
 __asm__(".code16gcc\n");
 
-void hex(char* src,char* buffer,int length)
+void str2hex(unsigned char* src,unsigned char* buffer,int length,char split)
 {
-	int i;
-	char hexnum[16]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-	for(i=0;i<length;i++)
+	int i,j;
+	unsigned char hexnum[16]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+	for(i=0,j=0;i<length;i++)
 	{
-		buffer[i*2]=hexnum[src[i]/16];
-		buffer[i*2+1]=hexnum[src[i]%16];
+		buffer[j++]=hexnum[src[i]/16];
+		buffer[j++]=hexnum[src[i]%16];
+		if(split!=0)
+		{
+			buffer[j++]=split;
+		}
 	}
 }
 
-char scanKeycode()
+unsigned char scanKeycode()
 {
 	__asm__("\n\
 	movw $0x0,%ax\n\
@@ -23,7 +27,7 @@ LFexist1:\n\
 	movb %ah,%al");
 }
 
-char scanASCIIcode()
+unsigned char scanASCIIcode()
 {
 	__asm__("\n\
 	movw $0x0,%ax\n\
@@ -46,3 +50,58 @@ void print(char* str,int length,int row,int col,int attr)
 	movw $0x1301,%ax\n\
 	int $0x10");
 }
+
+int readDisk(int start,int length,int disk,char* buffer)
+{
+	__asm__("\
+	movw 0x8(%ebp),%ax\n\
+	movw 0xA(%ebp),%dx\n\
+	movw $0x3EC1,%bx\n\
+	divw %bx\n\
+	movw %ax,%bx\n\
+	movw %dx,%ax\n\
+	movb $0x3F,%cl\n\
+	divb %cl\n\
+	movb %al,%dh\n\
+	movb %ah,%cl\n\
+	movb %bl,%ch\n\
+	shr $2,%bx\n\
+	and $0xc0,%bl\n\
+	or %bl,%cl\n\
+	\
+	movb 0x10(%ebp),%dl\n\
+	movw 0x14(%ebp),%bx\n\
+	movb 0xc(%ebp),%al\n\
+	movb $0x02,%ah\n\
+	\
+	int $0x13");
+}
+
+
+
+int writeDisk(int start,int length,int disk,char* buffer)
+{
+	__asm__("\
+	movw 0x8(%ebp),%ax\n\
+	movw 0xA(%ebp),%dx\n\
+	movw $0x3EC1,%bx\n\
+	divw %bx\n\
+	movw %ax,%bx\n\
+	movw %dx,%ax\n\
+	movb $0x3F,%cl\n\
+	divb %cl\n\
+	movb %al,%dh\n\
+	movb %ah,%cl\n\
+	movb %bl,%ch\n\
+	shr $2,%bx\n\
+	and $0xc0,%bl\n\
+	or %bl,%cl\n\
+	\
+	movb 0x10(%ebp),%dl\n\
+	movw 0x14(%ebp),%bx\n\
+	movb 0xc(%ebp),%al\n\
+	movb $0x03,%ah\n\
+	\
+	int $0x13");
+}
+
