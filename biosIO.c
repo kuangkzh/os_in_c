@@ -51,6 +51,19 @@ void print(char* str,int length,int row,int col,int attr)
 	int $0x10");
 }
 
+
+void printInt(int num,int row,int col,int attr)
+{
+	char str[12];
+	int i=11;
+	do{
+		str[i--]=num%10+'0';
+		num/=10;
+	} while(num!=0);
+	print(str+i+1,11-i,row,col,attr);
+}
+
+
 int readDisk(int start,int length,int disk,char* buffer)
 {
 	__asm__("\

@@ -1,4 +1,5 @@
 __asm__(".code16gcc\n");
+#include "system.h"
 
 int __INTERRUPT1(int eax,int ebx,int ecx,int edx,unsigned char intnum)
 {
@@ -32,6 +33,31 @@ int __INTERRUPT2(int eax,int ebx,int ecx,int edx,int esi,int edi,int ebp,unsigne
 LFINT2:\n\
 	.space 2,0x90\n\
 	popl %ebp");
+}
+
+
+void __INTERRUPT3(int eax,int ebx,int ecx,int edx,RegTable* regs,unsigned char intnum)
+{
+	__asm__("\
+	pushl %ebp\n\
+	movb 0x1c(%ebp),%ah\n\
+	movb $0xCD,%al\n\
+	movw %ax,LFINT3\n\
+	movl 0x8(%ebp),%eax\n\
+	movl 0xc(%ebp),%ebx\n\
+	movl 0x10(%ebp),%ecx\n\
+	movl 0x14(%ebp),%edx\n\
+LFINT3:\n\
+	.space 2,0x90\n\
+	popl %ebp\n\
+	pushw %ax\n\
+	movl 0x18(%ebp),%eax\n\
+	popw (%eax)\n\
+	movw %bx,0x2(%eax)\n\
+	movw %cx,0x4(%eax)\n\
+	movw %dx,0x6(%eax)\n\
+	pushf\n\
+	popw 0x8(%eax)");
 }
 
 
